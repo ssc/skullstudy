@@ -60,6 +60,11 @@
   .scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:12px}
   .team{min-width:0;display:flex;align-items:flex-start;gap:12px}
   .team .tmain{min-width:0;flex:0 0 44%;max-width:44%}
+  /* With More Stats off the name block keeps the 44% share it has
+     always had. With More Stats on the whole scoreboard is rearranged
+     instead (see the .scoreboard.morestats layout rules below): the
+     stats blocks become the far-left / far-right columns and the two
+     name blocks move into the centre, above the score. */
   .team.away{flex-direction:row-reverse}
   .team.away{text-align:right}
   .team .tname{font-family:"Barlow Condensed",sans-serif;font-size:clamp(1.15rem,3.4vw,1.6rem);font-weight:700;line-height:1.05;
@@ -72,24 +77,28 @@
   .team .tsub a{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px}
   .team .tsub a:hover{text-decoration-thickness:2px}
   .team .tsub a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
-  /* More Stats (Options toggle): per-team live stats in the header,
-     sitting between the team name and the score — the home block hugs
-     the right (score) edge of the home column, the away block the left
-     (score) edge of the away column. */
-  /* The stats block is a rectangle filling the space between the team
-     name block and the score: home stats sit to the right of the home
-     name (toward the score), away stats to the left of the away name. */
-  /* Both teams' stats blocks are the same size: the name block takes a
-     fixed 44% of each (equal) team column, so the stats block filling
-     the rest is the same width on both sides. Inside, the stats sit on
-     a fixed 3-column grid — every stat has its own cell (see the .st-*
-     placements), so the same stat lines up at the same spot in both
-     teams' blocks instead of shifting with content width. */
-  .tstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 10px;flex:1 1 0;min-width:0;margin-top:1px;
+  /* More Stats (Options toggle): per-team live stats in the header.
+     With stats off each block sits in its team's own header column,
+     between the name and the score. With stats on the scoreboard is
+     rearranged (see the .scoreboard.morestats rules below) and the
+     blocks become the far-left and far-right columns instead. */
+  /* Both teams' stats blocks are the same size in either layout: the
+     two team columns are equal (and, in the stats-on layout, the two
+     outer stats columns are equal 1fr tracks). Inside, the stats sit
+     on a fixed 3-column grid — every stat has its own cell (see the
+     .st-* placements), so the same stat lines up at the same spot in
+     both teams' blocks instead of shifting with content width. */
+  .tstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 9px;flex:1 1 0;min-width:0;margin-top:1px;
     font-size:.78rem;line-height:1.35;color:var(--muted);text-align:left;
-    background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;align-content:start}
+    background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 8px;align-content:start}
   .tstats[hidden]{display:none}
   .tstats b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+  /* Every stat item is one unbreakable "number + label" unit: items
+     never wrap mid-item, so a longer value can never make its box
+     taller than the other team's. Together with the fixed grid
+     placements (and the fixed two-row Block dice grid below) both
+     teams' blocks keep identical dimensions at every position. */
+  .tstats>span{white-space:nowrap}
   .tstats .st-pitch{grid-row:1;grid-column:1}
   .tstats .st-stand{grid-row:1;grid-column:2}
   .tstats .st-based{grid-row:1;grid-column:3}
@@ -102,10 +111,17 @@
   .tstats .st-blocks{grid-row:4;grid-column:1}
   .tstats .st-dodges{grid-row:4;grid-column:2}
   .tstats .st-rushes{grid-row:4;grid-column:3}
-  .tstats .st-armour{grid-row:5;grid-column:1/span 2}
+  .tstats .st-blitz{grid-row:5;grid-column:1}
+  .tstats .st-armour{grid-row:5;grid-column:2/span 2}
   /* Block dice sit in their own section, set off from the stats above
-     by a faint divider line spanning the stats block. */
-  .tstats .dice{grid-row:6;grid-column:1/-1;border-top:1px solid var(--line);margin-top:4px;padding-top:5px}
+     by a faint divider line spanning the stats block. The faces sit on
+     the same fixed 3-column grid as the stats — the label plus the
+     five faces fill exactly two rows, each face one nowrap unit — so
+     this section is always exactly two lines tall in both blocks,
+     however the counts differ. */
+  .tstats .dice{grid-row:6;grid-column:1/-1;border-top:1px solid var(--line);margin-top:4px;padding-top:5px;
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 9px}
+  .tstats .dice .df{white-space:nowrap}
 
   .team .dot{flex:0 0 auto;width:.62em;height:.62em;border-radius:50%}
   .dot.home{background:var(--home)} .dot.away{background:var(--away)}
@@ -138,6 +154,69 @@
   }
   .scorebox .score{font-family:"Barlow Condensed",sans-serif;font-size:clamp(2rem,7vw,3rem);font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
   .scorebox .phase{color:var(--muted);font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  /* More Stats on: the phase breaks onto two lines — "Half N" over
+     the detail ("Turn N" / "Setup — kick-off") — so the centre column
+     narrows and the stats blocks either side get the room instead.
+     The separator dot is only there for the one-line form. */
+  .scoreboard.morestats .phase .ph-sep{display:none}
+  .scoreboard.morestats .phase .ph-det{display:block}
+  /* More Stats on: rearrange the scoreboard to give the stats room.
+     The stats blocks move out to the far left and far right as their
+     own columns, and the centre groups the two team name blocks side
+     by side at the top, the score centred below them, and the phase
+     (already split onto two lines above) centred below the score.
+     The .team and .scorebox wrappers become display:contents in this
+     layout only, so their children place directly on the scoreboard
+     grid; with stats off none of this applies and the header is
+     exactly as before. The active team's outline ring is on .tmain
+     itself, so it is unaffected; the inactive dimming, which normally
+     sits on the whole .team wrapper, is re-applied to the name block
+     here (and the wrapper's own dimming neutralised) so the name
+     still dims exactly once. */
+  @media (min-width:641px){
+    .scoreboard.morestats{grid-template-columns:minmax(0,1fr) minmax(0,.6fr) minmax(0,.6fr) minmax(0,1fr);
+      grid-template-areas:"hstats hname aname astats" "hstats score score astats" "hstats phase phase astats";
+      column-gap:12px;row-gap:2px;align-items:start}
+    .scoreboard.morestats .team,.scoreboard.morestats .scorebox{display:contents}
+    .scoreboard.morestats .team.inactive{opacity:1}
+    .scoreboard.morestats .team.inactive .tmain{opacity:.55}
+    .scoreboard.morestats .team .tmain{flex:none;max-width:none;width:100%;transition:box-shadow .25s ease,opacity .25s ease}
+    .scoreboard.morestats .team.home .tmain{grid-area:hname;text-align:left}
+    .scoreboard.morestats .team.away .tmain{grid-area:aname;text-align:right}
+    .scoreboard.morestats #home-stats{grid-area:hstats}
+    .scoreboard.morestats #away-stats{grid-area:astats}
+    .scoreboard.morestats .tstats{margin-top:0;width:100%}
+    .scoreboard.morestats .scorebox .score{grid-area:score;text-align:center}
+    .scoreboard.morestats .scorebox .phase{grid-area:phase;text-align:center}
+  }
+  /* More Stats on, narrow screens: the same grouping, stacked so
+     nothing is squeezed side by side — names side by side at the
+     top, score and phase centred below them, then each stats block
+     at full width. */
+  @media (max-width:640px){
+    .scoreboard.morestats{grid-template-columns:1fr 1fr;
+      grid-template-areas:"hname aname" "score score" "phase phase" "hstats hstats" "astats astats";
+      column-gap:10px;row-gap:8px;align-items:start}
+    .scoreboard.morestats .team,.scoreboard.morestats .scorebox{display:contents}
+    .scoreboard.morestats .team.inactive{opacity:1}
+    .scoreboard.morestats .team.inactive .tmain{opacity:.55}
+    .scoreboard.morestats .team .tmain{flex:none;max-width:none;width:100%;transition:box-shadow .25s ease,opacity .25s ease}
+    .scoreboard.morestats .team.home .tmain{grid-area:hname;text-align:left}
+    .scoreboard.morestats .team.away .tmain{grid-area:aname;text-align:right}
+    .scoreboard.morestats #home-stats{grid-area:hstats;width:100%}
+    .scoreboard.morestats #away-stats{grid-area:astats;width:100%}
+    .scoreboard.morestats .scorebox .score{grid-area:score;text-align:center}
+    .scoreboard.morestats .scorebox .phase{grid-area:phase;text-align:center}
+  }
+  /* More Stats on: compact centre — smaller score, phase words and
+     team names (and tighter name-block padding) so the centre column
+     no longer runs taller than the stats blocks and leaves dead
+     space underneath them. Stats-off sizes are untouched. */
+  .scoreboard.morestats .scorebox .score{font-size:clamp(1.6rem,5.5vw,2.5rem)}
+  .scoreboard.morestats .scorebox .phase{font-size:.8rem;line-height:1.35}
+  .scoreboard.morestats .team .tname{font-size:clamp(1rem,2.6vw,1.25rem)}
+  .scoreboard.morestats .team .tsub{font-size:.75rem}
+  .scoreboard.morestats .team .tmain{padding:6px 10px}
 
   .pitchwrap{position:relative;border-radius:10px;overflow:hidden;background:#2f6f43}
   canvas#pitch{display:block;width:100%;height:auto;aspect-ratio:26/15}
@@ -556,7 +635,7 @@
         <button class="switch" id="morestats-toggle" type="button" role="switch" aria-checked="false">
           <span class="track" aria-hidden="true"></span><span>More Stats</span>
         </button>
-        <span style="color:var(--muted);font-size:.85rem">Show each team’s on pitch, standing, based, reserves, KOs and injured counts, plus cumulative blocks, dodges, rushes, armour rolls (as breaks / total armour rolls where the log records every armour roll) and block dice by face, in the header between the team name and the score.</span>
+        <span style="color:var(--muted);font-size:.85rem">Show each team’s on pitch, standing, based, reserves, KOs and injured counts, plus cumulative blocks, dodges, rushes, armour rolls (as breaks / total armour rolls — counted from the log where it records them, otherwise derived from knockdowns, fouls and crowd surfs) and block dice by face, in the columns at the far left and right of the header.</span>
       </div>
       <div class="teamcolors">
         <h3 class="options-sub">Team Colors</h3>
@@ -1073,6 +1152,11 @@ function boardAt(rt, i){
    - Dodges / rushes: one per "Dodge #…" / "Go for it #…" roll line,
      a success when the line says so; a re-rolled roll leaves both
      lines in the FUMBBL log, so both count, as rolls.
+   - Blitzes: BB3 prints one "#…: Blitz" line per Blitz action.
+     FUMBBL announces "blitzMove" again when the blitzing player
+     re-declares the target mid-action, so only the first blitzMove
+     of an action counts — a different action announcement, a turn
+     end, or a change of active team closes the action.
    - Armour breaks: BB3 prints the armour roll itself ("Armour #…:
      rolled … — broken"); the break is credited to the active team
      when the victim is an opponent (a block / foul knockdown) and to
@@ -1084,14 +1168,107 @@ function boardAt(rt, i){
      count once. Causes that never roll armour (stab, eatPlayer) are
      not breaks at all; self-inflicted falls (dropDodge / dropGfi /
      dropLeap / ttmLanding) credit nobody; the rest (block, foul,
-     crowdpush, projectileVomit, …) credit the victim's opponents. */
+     crowdpush, projectileVomit, …) credit the victim's opponents.
+   - Armour totals (the denominator): BB3 counts its "Armour #…"
+     lines directly. FUMBBL logs no armour rolls, held or broken, so
+     its total is derived from the step deltas (see fumbblArmourTried
+     below): every knockdown is one armour roll, credited like the
+     breaks to the victim's opponents, plus one per foul and one per
+     crowd surf. The derived total is floored at the break count, so
+     the displayed ratio never shows more breaks than tries. */
+/* FUMBBL armour attempts, derived one step at a time (cumStats calls
+   this for every step of a FUMBBL game): FUMBBL logs no armour rolls,
+   so the total tried is reconstructed from the step deltas. A
+   knockdown — a player's state dropping from standing / moving /
+   blocked to falling / prone / stunned — is one armour roll,
+   credited, like the breaks, to the victim's opponents; whether the
+   roll broke or held makes no difference here (breaks are counted
+   separately, from the injury lines). Fouls roll armour against a
+   player already prone, so they leave no knockdown: each "Foul on"
+   line is one attempt by the fouling team. A crowd surf removes the
+   victim from the pitch outright: a removal from standing / blocked
+   right after a "Pushback:" line naming the victim is one attempt by
+   the victim's opponents.
+   Not armour rolls, and excluded: self-caused falls (named by the
+   injury causes when the armour broke; a held self-fall is the
+   active team's own player going down with no block result behind
+   it in the surrounding log), stab / eaten players, Wrestle (both
+   players placed prone, no roll), pitch-invasion stuns, and failed
+   stand-ups. A held knockdown can first surface in a turn-end sync
+   step, so sync steps are not exempt — the same guards apply there.
+   track.last carries each player's last delta state across steps. */
+function fumbblArmourTried(rt, si, cur, nameByPid, pidTeam, track){
+  var s = rt.steps[si];
+  var team = s.activeTeam;
+  var log = s.log || [];
+  function linesAround(a, b){
+    var out = [];
+    for(var j = Math.max(0, si+a); j <= Math.min(rt.steps.length-1, si+b); j++)
+      (rt.steps[j].log || []).forEach(function(l){ out.push(l); });
+    return out;
+  }
+  if(team === "home" || team === "away")
+    log.forEach(function(l){ if(l.indexOf("Foul on #") === 0) cur[team].armourTot++; });
+  var deltas = s.players || {};
+  Object.keys(deltas).forEach(function(pid){
+    var d = deltas[pid], nm = nameByPid[pid];
+    if(d === null){
+      var prev0 = track.last[pid];
+      delete track.last[pid];
+      if((prev0 === "standing" || prev0 === "blocked") && nm){
+        var plines = log.concat(si > 0 ? (rt.steps[si-1].log || []) : []);
+        for(var q = 0; q < plines.length; q++){
+          if(plines[q].indexOf("Pushback: ") === 0 && plines[q].indexOf(nm) >= 0){
+            var vt0 = pidTeam[pid];
+            if(vt0 === "home" || vt0 === "away") cur[vt0 === "home" ? "away" : "home"].armourTot++;
+            break;
+          }
+        }
+      }
+      return;
+    }
+    var prev = track.last[pid];
+    if(d.state) track.last[pid] = d.state;
+    if(!prev || !d.state || !nm) return;
+    var wasUp = prev === "standing" || prev === "moving" || prev === "blocked";
+    var nowDown = d.state === "falling" || d.state === "prone" || d.state === "stunned";
+    if(!wasUp || !nowDown) return;
+    var vt = d.team || pidTeam[pid];
+    if(vt !== "home" && vt !== "away") return;
+    var near = linesAround(-4, 4), cause = null, wrestle = false, standup = false;
+    near.forEach(function(l){
+      var mm = /^Injury: #(\d+) (.+) \u2014 ([A-Za-z]+)$/.exec(l);
+      if(mm && ("#"+mm[1]+" "+mm[2]) === nm) cause = mm[3];
+      if(l.indexOf("uses Wrestle") >= 0) wrestle = true;
+      if(l.indexOf("fails to stand up") >= 0 && l.indexOf(nm) >= 0) standup = true;
+    });
+    if(wrestle || standup) return;
+    var invasion = false;
+    linesAround(-3, 0).forEach(function(l){ if(l.indexOf("Pitch Invasion") >= 0) invasion = true; });
+    if(invasion) return;
+    if(cause === "stab" || cause === "eatPlayer" || cause === "dropDodge" || cause === "dropGfi" ||
+       cause === "dropLeap" || cause === "ttmLanding") return;
+    if(!cause && vt === team){
+      /* The active team's own player went down with no injury line
+         behind it: a held self-fall (failed dodge / rush / leap),
+         unless a block result in the wider window says it was an
+         attacker-down knockdown. */
+      var hasBlock = false;
+      linesAround(-12, 2).forEach(function(l){ if(l.indexOf("Block result:") === 0) hasBlock = true; });
+      if(!hasBlock) return;
+    }
+    cur[vt === "home" ? "away" : "home"].armourTot++;
+  });
+}
 function cumStats(rt){
   if(rt.cum) return rt.cum;
   var g = game();
   var lookup = {};
+  var nameByPid = {}, pidTeam = {};
   Object.keys(g.players || {}).forEach(function(pid){
     var p = g.players[pid];
     if(p && p.nr != null && p.name) lookup[p.nr+"|"+p.name] = p.team;
+    if(p){ pidTeam[pid] = p.team; if(p.nr != null && p.name) nameByPid[pid] = "#"+p.nr+" "+p.name; }
   });
   var bb3 = false;
   rt.steps.forEach(function(s){
@@ -1099,11 +1276,14 @@ function cumStats(rt){
       if(line.indexOf("Block dice:") === 0 && /[A-Za-z]/.test(line.slice(11))) bb3 = true;
     });
   });
-  function blank(){ return { blocks:0, dodgeOk:0, dodgeTot:0, rushOk:0, rushTot:0, armour:0, armourTot:0, dice:{ skull:0, bothdown:0, push:0, stumble:0, pow:0 } }; }
+  function blank(){ return { blocks:0, blitzes:0, dodgeOk:0, dodgeTot:0, rushOk:0, rushTot:0, armour:0, armourTot:0, dice:{ skull:0, bothdown:0, push:0, stumble:0, pow:0 } }; }
   var cur = { home:blank(), away:blank() };
   var cum = [];
-  rt.steps.forEach(function(s){
+  var armourTrack = { last:{} };
+  var blitzOpen = false, prevStepTeam = null;
+  rt.steps.forEach(function(s, si){
     var team = s.activeTeam;
+    if(team !== prevStepTeam){ blitzOpen = false; prevStepTeam = team; }
     var mine = (team === "home" || team === "away") ? cur[team] : null;
     var seenInjury = {};
     (s.log || []).forEach(function(line){
@@ -1130,6 +1310,12 @@ function cumStats(rt){
         }
       }
       else if(bb3 && line.indexOf("Block result:") === 0){ if(mine) mine.blocks++; }
+      else if(/^#\d+ .+: Blitz$/.test(line)){ if(mine) mine.blitzes++; }
+      else if(line === "#None: blitzMove"){
+        if(mine && !blitzOpen){ mine.blitzes++; blitzOpen = true; }
+      }
+      else if(line === "Turn ends"){ blitzOpen = false; }
+      else if(line.indexOf("#None: ") === 0){ blitzOpen = false; }
       else if(/^Dodge #\d+/.test(line)){
         if(mine){ mine.dodgeTot++; if(line.indexOf("\u2014 success") >= 0) mine.dodgeOk++; }
       }
@@ -1153,7 +1339,17 @@ function cumStats(rt){
         if(credit === "home" || credit === "away") cur[credit].armour++;
       }
     });
-    cum.push({ home:Object.assign({}, cur.home, { dice:Object.assign({}, cur.home.dice) }), away:Object.assign({}, cur.away, { dice:Object.assign({}, cur.away.dice) }), armourKnown:bb3 });
+    if(!bb3) fumbblArmourTried(rt, si, cur, nameByPid, pidTeam, armourTrack);
+    var entry = { home:Object.assign({}, cur.home, { dice:Object.assign({}, cur.home.dice) }), away:Object.assign({}, cur.away, { dice:Object.assign({}, cur.away.dice) }) };
+    if(!bb3){
+      /* A break with no delta-visible knockdown (e.g. a failed
+         projectile vomit, which injures the vomiter where he stands)
+         still implies the roll was tried: floor the derived total at
+         the break count so the ratio never reads x/y with y < x. */
+      entry.home.armourTot = Math.max(entry.home.armourTot, entry.home.armour);
+      entry.away.armourTot = Math.max(entry.away.armourTot, entry.away.armour);
+    }
+    cum.push(entry);
   });
   rt.cum = cum;
   return cum;
@@ -2014,10 +2210,14 @@ function renderHeaderStats(t){
       parts.push("<span class=\"st-blocks\"><b>"+s.blocks+"</b> blocks</span>");
       parts.push("<span class=\"st-dodges\"><b>"+s.dodgeOk+"/"+s.dodgeTot+"</b> dodges</span>");
       parts.push("<span class=\"st-rushes\"><b>"+s.rushOk+"/"+s.rushTot+"</b> rushes</span>");
-      parts.push(cum.armourKnown ?
-        "<span class=\"st-armour\"><b>"+s.armour+"/"+s.armourTot+"</b> armour rolls</span>" :
-        "<span class=\"st-armour\"><b>"+s.armour+"/\u2014</b> armour rolls</span>");
-      parts.push("<span class=\"dice\">Block dice — Skull <b>"+s.dice.skull+"</b> · Both down <b>"+s.dice.bothdown+"</b> · Push <b>"+s.dice.push+"</b> · Stumble <b>"+s.dice.stumble+"</b> · POW <b>"+s.dice.pow+"</b></span>");
+      parts.push("<span class=\"st-blitz\"><b>"+s.blitzes+"</b> blitzes</span>");
+      parts.push("<span class=\"st-armour\"><b>"+s.armour+"/"+s.armourTot+"</b> armour rolls</span>");
+      parts.push("<span class=\"dice\"><span class=\"df\">Block dice</span>" +
+        "<span class=\"df\">Skull <b>"+s.dice.skull+"</b></span>" +
+        "<span class=\"df\">Both down <b>"+s.dice.bothdown+"</b></span>" +
+        "<span class=\"df\">Push <b>"+s.dice.push+"</b></span>" +
+        "<span class=\"df\">Stumble <b>"+s.dice.stumble+"</b></span>" +
+        "<span class=\"df\">POW <b>"+s.dice.pow+"</b></span></span>");
     }
     return parts.join("");
   }
@@ -2033,9 +2233,13 @@ function paintScoreboard(t){
      scoreboard itself — the active team's side is highlighted in its
      team colour and the inactive side dims (see the .team.active /
      .team.inactive rules). */
-  $("phase").textContent = t.activeTeam ?
-    "Half "+t.half+" · Turn "+tn :
-    "Half "+t.half+" · Setup — kick-off";
+  /* The phase is two spans so More Stats can break it onto two lines
+     ("Half N" over the detail) via CSS — see the .scoreboard.morestats
+     .phase rules. With stats off the separator dot shows and it reads
+     as one line, exactly as before. */
+  $("phase").innerHTML =
+    "<span class=\"ph-half\">Half "+t.half+"</span><span class=\"ph-sep\"> · </span>" +
+    "<span class=\"ph-det\">"+(t.activeTeam ? "Turn "+tn : "Setup — kick-off")+"</span>";
   $("team-home").classList.toggle("active", t.activeTeam==="home");
   $("team-home").classList.toggle("inactive", t.activeTeam==="away");
   $("team-away").classList.toggle("active", t.activeTeam==="away");
