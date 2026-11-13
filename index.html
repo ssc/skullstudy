@@ -59,7 +59,7 @@
   .scrub{padding:14px 14px 16px;margin-top:6px}
   .scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:12px}
   .team{min-width:0;display:flex;align-items:flex-start;gap:12px}
-  .team .tmain{min-width:0;flex:0 0 auto;max-width:55%}
+  .team .tmain{min-width:0;flex:0 0 44%;max-width:44%}
   .team.away{flex-direction:row-reverse}
   .team.away{text-align:right}
   .team .tname{font-family:"Barlow Condensed",sans-serif;font-size:clamp(1.15rem,3.4vw,1.6rem);font-weight:700;line-height:1.05;
@@ -79,31 +79,49 @@
   /* The stats block is a rectangle filling the space between the team
      name block and the score: home stats sit to the right of the home
      name (toward the score), away stats to the left of the away name. */
-  .tstats{display:flex;flex-wrap:wrap;gap:2px 10px;flex:1 1 0;min-width:0;margin-top:1px;
-    font-size:.78rem;line-height:1.35;color:var(--muted);
-    background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;align-content:flex-start}
+  /* Both teams' stats blocks are the same size: the name block takes a
+     fixed 44% of each (equal) team column, so the stats block filling
+     the rest is the same width on both sides. Inside, the stats sit on
+     a fixed 3-column grid — every stat has its own cell (see the .st-*
+     placements), so the same stat lines up at the same spot in both
+     teams' blocks instead of shifting with content width. */
+  .tstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 10px;flex:1 1 0;min-width:0;margin-top:1px;
+    font-size:.78rem;line-height:1.35;color:var(--muted);text-align:left;
+    background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;align-content:start}
   .tstats[hidden]{display:none}
   .tstats b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
-  .tstats .dice{flex-basis:100%}
+  .tstats .st-pitch{grid-row:1;grid-column:1}
+  .tstats .st-stand{grid-row:1;grid-column:2}
+  .tstats .st-based{grid-row:1;grid-column:3}
+  .tstats .st-res{grid-row:2;grid-column:1}
+  .tstats .st-ko{grid-row:2;grid-column:2}
+  .tstats .st-inj{grid-row:2;grid-column:3}
+  /* A faint divider line sets the pitch counts (rows 1–2) apart from
+     the action stats below them. */
+  .tstats .st-div{grid-row:3;grid-column:1/-1;border-top:1px solid var(--line);margin-top:4px;margin-bottom:3px;height:0}
+  .tstats .st-blocks{grid-row:4;grid-column:1}
+  .tstats .st-dodges{grid-row:4;grid-column:2}
+  .tstats .st-rushes{grid-row:4;grid-column:3}
+  .tstats .st-armour{grid-row:5;grid-column:1/span 2}
+  /* Block dice sit in their own section, set off from the stats above
+     by a faint divider line spanning the stats block. */
+  .tstats .dice{grid-row:6;grid-column:1/-1;border-top:1px solid var(--line);margin-top:4px;padding-top:5px}
 
   .team .dot{flex:0 0 auto;width:.62em;height:.62em;border-radius:50%}
   .dot.home{background:var(--home)} .dot.away{background:var(--away)}
   /* Active turn: the active team's name block is wrapped on all sides by
-     a team-colour ring plus a soft glow radiating out from every edge in
-     the same colour, and the inactive side dims. The name block always
-     carries generous padding, active or not, so the text keeps the same
-     margins, never sits cramped inside the glow, and nothing shifts when
-     the turn changes. Colours come from the --home/--away variables, so
-     the highlight follows the Options team-colour picks. */
+     a team-colour outline ring, and the inactive side dims. The name
+     block always carries generous padding, active or not, so the text
+     keeps the same margins and nothing shifts when the turn changes.
+     Colours come from the --home/--away variables, so the outline
+     follows the Options team-colour picks. */
   .team{transition:opacity .25s ease}
   .team.inactive{opacity:.55}
   .team .tmain{padding:8px 14px;border-radius:10px;
-    box-shadow:inset 0 0 0 2px transparent,0 0 18px 2px transparent;
+    box-shadow:inset 0 0 0 2px transparent;
     transition:box-shadow .25s ease}
-  .team.home.active .tmain{box-shadow:inset 0 0 0 2px var(--home),0 0 18px 2px var(--home);
-    box-shadow:inset 0 0 0 2px var(--home),0 0 18px 2px color-mix(in srgb,var(--home) 55%,transparent)}
-  .team.away.active .tmain{box-shadow:inset 0 0 0 2px var(--away),0 0 18px 2px var(--away);
-    box-shadow:inset 0 0 0 2px var(--away),0 0 18px 2px color-mix(in srgb,var(--away) 55%,transparent)}
+  .team.home.active .tmain{box-shadow:inset 0 0 0 2px var(--home)}
+  .team.away.active .tmain{box-shadow:inset 0 0 0 2px var(--away)}
   .scorebox{text-align:center;min-width:0}
   @media (max-width:640px){
     .scoreboard{grid-template-columns:1fr 1fr;grid-template-areas:"score score" "home away"}
@@ -114,6 +132,7 @@
     .team .tname .ttext{white-space:normal;overflow:visible;text-overflow:clip}
     .team .tsub{white-space:normal}
     .scoreboard .team{flex-direction:column;gap:4px}
+    .scoreboard .tmain{flex:0 0 auto;max-width:none}
     .scoreboard .tstats{width:100%;min-width:0}
     .scorebox .phase{font-size:.8rem}
   }
@@ -131,12 +150,20 @@
     padding:6px 9px;font-size:.82rem;line-height:1.35;display:none;z-index:5;max-width:264px}
   .tip .tn{font-weight:700}
   .tip .tstat{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.92em;opacity:.92}
-  .tip .ts{opacity:.75}
-  /* Grouped skills (built-in vs added) — shared by the roster popup and the
-     pitch tooltip; added skills are bold in both, with no group labels. */
+  /* The team-name footer is a block with its own top margin, so there is
+     always a gap above it — with no skills the skills block is absent,
+     and the footer used to sit flush against the line above it. */
+  .tip .ts{display:block;margin-top:6px;opacity:.75}
+  /* Unified skills/conditions list — shared by the roster popup and the
+     pitch tooltip; added skills are bold in both, with no group labels,
+     and the current condition follows in the same list, bold yellow. */
   .sk-group{display:block}
   .tip .sk-group{margin-top:2px}
   .tip .sk-added{font-weight:700}
+  /* The tooltip sits on a dark background in both colour schemes, so its
+     condition words use a bright yellow directly rather than --cond
+     (which is tuned for the roster's light/dark surfaces). */
+  .tip .cond{font-weight:700;color:#facc15}
 
   /* team-name roster popup */
   .team .tname.roster-anchor:hover .ttext{text-decoration:underline dotted var(--muted);text-decoration-thickness:2px;text-underline-offset:4px}
@@ -216,12 +243,21 @@
   .switch[aria-disabled="true"],.switch:disabled{opacity:.45;cursor:not-allowed}
   .switch[aria-disabled="true"] .track,.switch:disabled .track{background:var(--surface2);border-color:var(--line)}
   .switch[aria-disabled="true"] .track::after,.switch:disabled .track::after{background:var(--muted)}
-  .chessbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:10px 2px 0}
-  .chessbar .switch{margin-left:auto;min-height:2rem;padding-top:0;padding-bottom:0;font-size:.9rem;color:var(--ink)}
-  .chessbar > .legend-item{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem;white-space:nowrap}
-  .chesskey{display:none;flex-wrap:wrap;gap:4px 14px;color:var(--muted);font-size:.85rem;margin:10px 2px 0}
+  /* The legend row is two columns: the legend items live in the left
+     column and wrap within it, and the "Use Chess Pieces" toggle sits
+     in its own right-hand column, top-aligned, so it keeps the same Y
+     position no matter how many lines the legend wraps onto. */
+  .chessbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:6px 16px;margin:10px 2px 0}
+  .chessbar .switch{min-height:2rem;padding-top:0;padding-bottom:0;font-size:.9rem;color:var(--ink)}
+  .legendcol{min-width:0}
+  .balllegend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+  .legend-item{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem;white-space:nowrap}
+  @media (max-width:560px){ .legend-item{white-space:normal} }
+  .chesskey{display:none;flex-wrap:wrap;gap:4px 14px;color:var(--muted);font-size:.85rem}
   .chesskey.show{display:flex}
-  .chesskey.show + .chessbar{margin-top:6px}
+  /* Chess key shares the chessbar row with the toggle: while it is showing,
+     the Home/Away/Ball legend items in the legend column are hidden. */
+  .chessbar.chess-on .balllegend{display:none}
   /* No outline/border ring around the "Use Chess Pieces" toggle — clicking
      it left a green focus outline framing the whole control. */
   #chess-toggle:focus,#chess-toggle:focus-visible{outline:none;box-shadow:none}
@@ -437,22 +473,26 @@
       <div class="tip" id="tip"></div>
     </div>
 
-    <div class="chesskey" id="chesskey" aria-label="Chess piece key">
-      <span><span class="gly">&#9823;</span> <b>Pawn</b> Lineman</span>
-      <span><span class="gly">&#9820;</span> <b>Rook</b> Blocker</span>
-      <span><span class="gly">&#9822;</span> <b>Knight</b> Blitzer</span>
-      <span><span class="gly">&#9821;</span> <b>Bishop</b> Catcher / Runner</span>
-      <span><span class="gly">&#9819;</span> <b>Queen</b> Thrower / Special</span>
-      <span><span class="gly">&#9818;</span> <b>King</b> Big Guy</span>
-      <span><span class="gly">&#9733;</span> <b>Star</b> Star player</span>
-      <span><span class="gly">&#9679;</span> <b>Circle</b> Other / Unique</span>
-    </div>
-    <div class="chessbar">
-      <span class="legend-item"><i class="swatch" style="background:var(--home)"></i> Home</span>
-      <span class="legend-item"><i class="swatch" style="background:var(--away)"></i> Away</span>
-      <span class="legend-item"><i class="swatch ball"></i> Ball (loose)</span>
-      <span class="legend-item"><i class="swatch carrier"></i> Ball carrier highlight</span>
-      <span class="legend-item"><i class="swatch prone" style="background:var(--muted)"></i> Prone / stunned (flattened)</span>
+    <div class="chessbar" id="chessbar">
+      <div class="legendcol">
+        <div class="chesskey" id="chesskey" aria-label="Chess piece key">
+          <span><span class="gly">&#9823;</span> <b>Pawn</b> Lineman</span>
+          <span><span class="gly">&#9820;</span> <b>Rook</b> Blocker</span>
+          <span><span class="gly">&#9822;</span> <b>Knight</b> Blitzer</span>
+          <span><span class="gly">&#9821;</span> <b>Bishop</b> Catcher / Runner</span>
+          <span><span class="gly">&#9819;</span> <b>Queen</b> Thrower / Special</span>
+          <span><span class="gly">&#9818;</span> <b>King</b> Big Guy</span>
+          <span><span class="gly">&#9733;</span> <b>Star</b> Star player</span>
+          <span><span class="gly">&#9679;</span> <b>Circle</b> Other / Unique</span>
+        </div>
+        <div class="balllegend">
+          <span class="legend-item"><i class="swatch" style="background:var(--home)"></i> Home</span>
+          <span class="legend-item"><i class="swatch" style="background:var(--away)"></i> Away</span>
+          <span class="legend-item"><i class="swatch ball"></i> Ball (loose)</span>
+          <span class="legend-item"><i class="swatch carrier"></i> Ball carrier highlight</span>
+          <span class="legend-item"><i class="swatch prone" style="background:var(--muted)"></i> Prone / stunned (flattened)</span>
+        </div>
+      </div>
       <button class="switch" id="chess-toggle" type="button" role="switch" aria-checked="false">
         <span class="track" aria-hidden="true"></span><span>Use Chess Pieces</span>
       </button>
@@ -516,7 +556,7 @@
         <button class="switch" id="morestats-toggle" type="button" role="switch" aria-checked="false">
           <span class="track" aria-hidden="true"></span><span>More Stats</span>
         </button>
-        <span style="color:var(--muted);font-size:.85rem">Show each team’s on pitch, standing, based, reserves, KOs and injured counts, plus cumulative blocks, dodges, rushes, block dice by face and armour rolls (as breaks / total armour rolls where the log records every armour roll), in the header between the team name and the score.</span>
+        <span style="color:var(--muted);font-size:.85rem">Show each team’s on pitch, standing, based, reserves, KOs and injured counts, plus cumulative blocks, dodges, rushes, armour rolls (as breaks / total armour rolls where the log records every armour roll) and block dice by face, in the header between the team name and the score.</span>
       </div>
       <div class="teamcolors">
         <h3 class="options-sub">Team Colors</h3>
@@ -879,10 +919,16 @@ function foulMatchesEvent(g, foul, ev){
    players — anyone with a standing teammate — are left exactly as parsed.
    Mirrors the fix in parse_replay.py (Board.snapshot). */
 function recomputeContact(snap){
+  /* "Based" (contact) counts a player only when they are up — not
+     prone or stunned — and adjacent to at least one opponent who is
+     also up: a prone/stunned opponent exerts no tackle zone, so being
+     next to one does not base you. Step snapshots also carry the
+     transient upright states "blocked" / "falling"; those players are
+     drawn upright and are not prone, so they count as up here. */
   var by = { home:[], away:[] };
   Object.keys(snap.players || {}).forEach(function(pid){
     var p = snap.players[pid];
-    if(p.state==="standing" || p.state==="moving") by[p.team].push([p.x, p.y]);
+    if(p.state!=="prone" && p.state!=="stunned") by[p.team].push([p.x, p.y]);
   });
   function adj(a, b){ return Math.max(Math.abs(a[0]-b[0]), Math.abs(a[1]-b[1]))===1; }
   var res = {};
@@ -1680,13 +1726,31 @@ function renderSwitcher(){
     var gsub = g.teams.home.race+" ("+g.teams.home.coach+") vs "+g.teams.away.race+
       " ("+g.teams.away.coach+") · "+ref+(g.date ? " · "+g.date : "");
     o.textContent = gname+" — "+gsub+srcTag;
+    /* Mark the loaded game's option selected as it is built, not only
+       via host.value after the rebuild: when the game came from a deep
+       link (#game=<replayId> in the URL) rather than from this dropdown,
+       the option flags are what guarantee the switcher shows the game
+       that is actually loaded. */
+    if(i === state.gi) o.selected = true;
     host.appendChild(o);
   });
   host.value = String(state.gi);
+  if(host.selectedIndex !== state.gi) host.selectedIndex = state.gi;
   if(!host._changeBound){
     host._changeBound = true;
     host.addEventListener("change", function(){ selectGame(parseInt(host.value,10)||0); });
   }
+}
+/* Re-assert the dropdown's selection from state.gi without rebuilding
+   its options. Called after every deep-link application (initial load
+   and hashchange alike) so the switcher can never be left showing the
+   default/first game while another game — the one named in the URL —
+   is the one loaded and on the pitch. */
+function syncSwitcherSelection(){
+  var host = $("gameswitch");
+  if(!host || !host.options.length) return;
+  if(host.selectedIndex !== state.gi) host.selectedIndex = state.gi;
+  if(host.value !== String(state.gi)) host.value = String(state.gi);
 }
 function selectGame(i){
   stopPlay(); state.gi = i; state.ti = 0; state.si = 0; state.view = null; state._prevView = null;
@@ -1845,15 +1909,20 @@ pitch.addEventListener("mousemove", function(e){
     var chp = chessFor(g, fpid);
     var stat = statLineFor(g, fpid);
     var pRec = pinfo(g, fpid);
-    var skHtml = skillsHtml(skillGroupsFor(g, fpid, pRec));
+    /* Skills and current condition form one unified list here, exactly
+       as in the roster popup's Skills/Conditions column: built-in skills
+       plain, added skills bold, and the condition (Prone, Stunned,
+       Has ball…) bold yellow at the end of that same list. The footer
+       below no longer carries the state or has-the-ball — they appear
+       only in this list, never duplicated. */
+    var skHtml = skillsHtml(skillGroupsFor(g, fpid, pRec), conditionFor(g, fpid).words);
     tip.innerHTML = '<span class="tn">'+esc(pname(g, fpid, found.nr))+'</span>'+
       (stat ? '<br><span class="tstat">'+esc(stat)+'</span>' : '')+
       (skHtml ? skHtml : '')+
-      '<br><span class="ts">'+
-      esc(found.team==="home" ? g.teams.home.name : g.teams.away.name)+' · '+esc(found.state)+
+      '<span class="ts">'+
+      esc(found.team==="home" ? g.teams.home.name : g.teams.away.name)+
       (chp && !stat ? ' · '+esc(chp.label) : '')+
-      (isStarPlayer(g, fpid) ? ' · Star player' : '')+
-      (t.snap.ballCarrier===fpid ? ' · has the ball' : '')+'</span>';
+      (isStarPlayer(g, fpid) ? ' · Star player' : '')+'</span>';
     tip.style.display = "block";
     /* Clamp the tooltip inside the pitch using its measured size, so it is
        never clipped at any edge — right and bottom included. The pitch wrap
@@ -1929,25 +1998,26 @@ function renderHeaderStats(t){
       if(p.team === team){ tot++; if(p.state === "standing" || p.state === "moving") st++; }
     });
     var parts = [
-      "<span><b>"+tot+"</b> on pitch</span>",
-      "<span><b>"+st+"</b> standing</span>",
-      "<span><b>"+(contact[team] ? contact[team].inContact : 0)+"</b> based</span>"
+      "<span class=\"st-pitch\"><b>"+tot+"</b> on pitch</span>",
+      "<span class=\"st-stand\"><b>"+st+"</b> standing</span>",
+      "<span class=\"st-based\"><b>"+(contact[team] ? contact[team].inContact : 0)+"</b> based</span>"
     ];
     var off = offPitchSplit(game(), team, snap, t && t.cmd);
     if(off){
-      parts.push("<span><b>"+off.reserves+"</b> reserves</span>");
-      parts.push("<span><b>"+off.ko+"</b> KOs</span>");
-      parts.push("<span><b>"+off.injured+"</b> injured</span>");
+      parts.push("<span class=\"st-res\"><b>"+off.reserves+"</b> reserves</span>");
+      parts.push("<span class=\"st-ko\"><b>"+off.ko+"</b> KOs</span>");
+      parts.push("<span class=\"st-inj\"><b>"+off.injured+"</b> injured</span>");
     }
     if(cum){
       var s = cum[team];
-      parts.push("<span><b>"+s.blocks+"</b> blocks</span>");
-      parts.push("<span><b>"+s.dodgeOk+"/"+s.dodgeTot+"</b> dodges</span>");
-      parts.push("<span><b>"+s.rushOk+"/"+s.rushTot+"</b> rushes</span>");
-      parts.push("<span class=\"dice\">Block dice — Skull <b>"+s.dice.skull+"</b> · Both down <b>"+s.dice.bothdown+"</b> · Push <b>"+s.dice.push+"</b> · Stumble <b>"+s.dice.stumble+"</b> · POW <b>"+s.dice.pow+"</b></span>");
+      parts.push("<span class=\"st-div\" aria-hidden=\"true\"></span>");
+      parts.push("<span class=\"st-blocks\"><b>"+s.blocks+"</b> blocks</span>");
+      parts.push("<span class=\"st-dodges\"><b>"+s.dodgeOk+"/"+s.dodgeTot+"</b> dodges</span>");
+      parts.push("<span class=\"st-rushes\"><b>"+s.rushOk+"/"+s.rushTot+"</b> rushes</span>");
       parts.push(cum.armourKnown ?
-        "<span><b>"+s.armour+"/"+s.armourTot+"</b> armour rolls</span>" :
-        "<span><b>"+s.armour+"/\u2014</b> armour rolls</span>");
+        "<span class=\"st-armour\"><b>"+s.armour+"/"+s.armourTot+"</b> armour rolls</span>" :
+        "<span class=\"st-armour\"><b>"+s.armour+"/\u2014</b> armour rolls</span>");
+      parts.push("<span class=\"dice\">Block dice — Skull <b>"+s.dice.skull+"</b> · Both down <b>"+s.dice.bothdown+"</b> · Push <b>"+s.dice.push+"</b> · Stumble <b>"+s.dice.stumble+"</b> · POW <b>"+s.dice.pow+"</b></span>");
     }
     return parts.join("");
   }
@@ -1972,6 +2042,36 @@ function paintScoreboard(t){
   $("team-away").classList.toggle("inactive", t.activeTeam==="home");
   renderHeaderStats(t);
 }
+/* ---------- live URL sync ----------
+   The address bar always carries the current deep link —
+   #game=<replayId>&move=<1-based move number>, plus &combine=0 when
+   trivial-move combining is off and &view=turn in turn view (the
+   format applyLinkParams reads back; see currentShareHash). Every
+   position change funnels through goTo / goStep — stepping, scrubbing
+   the slider, playback ticks, turn/event jumps and game switches all
+   land there — so syncing at the end of those two functions keeps the
+   URL current however the position was reached. history.replaceState
+   rewrites the current history entry instead of pushing a new one, so
+   advancing move by move never floods the browser history, and
+   because replaceState does not fire hashchange, the sync cannot
+   loop back into the deep-link handler. */
+function currentShareHash(){
+  var g = game();
+  if(!g) return "";
+  var move = state.mode === "step" ? state.si + 1 : state.ti + 1;
+  var hash = "#game=" + encodeURIComponent(g.replayId) + "&move=" + move;
+  if(!state.combine) hash += "&combine=0";
+  if(state.mode === "turn") hash += "&view=turn";
+  return hash;
+}
+function syncUrlToPosition(){
+  try{
+    var hash = currentShareHash();
+    if(!hash || window.location.hash === hash) return;
+    window.history.replaceState(null, "", hash);
+  }catch(e){ /* A sandboxed frame can refuse history writes; the
+                position still changes and deep links still load. */ }
+}
 function goTo(i){
   var g = game();
   state.ti = Math.max(0, Math.min(g.turns.length-1, i));
@@ -1982,6 +2082,7 @@ function goTo(i){
   paintScoreboard(t);
   $("turncount").textContent = "Turn "+(state.ti+1)+" / "+g.turns.length+" · cmd "+t.cmd;
   drawPitch(); markCurrentEvent(); refreshRoster();
+  syncUrlToPosition();
 }
 function goStep(i){
   var g = game(), rt = curStepsRt();
@@ -1997,6 +2098,7 @@ function goStep(i){
   paintScoreboard(state.view);
   $("turncount").textContent = "Move "+(state.si+1)+" / "+dispLen(rt);
   drawPitch(); markCurrentEvent(); updateLog(); refreshRoster();
+  syncUrlToPosition();
 }
 function updateLog(){
   var rt = curStepsRt(); if(!rt) return;
@@ -2374,17 +2476,22 @@ function skillGroupsFor(g, pid, p){
   var added = sortSkillNames(raw.added).filter(function(s){ return builtin.indexOf(s) === -1; });
   return { builtin:builtin, added:added };
 }
-/* The grouped skills markup shared by the roster popup's Skills column and
-   the pitch tooltip: built-in skills first, then added skills with their
-   names bold (no group labels — the bolding alone distinguishes them).
-   Returns "" when the player has no skills at all. */
-function skillsHtml(groups){
-  if(!groups || (!groups.builtin.length && !groups.added.length)) return "";
+/* The unified skills/conditions markup shared by the roster popup's
+   Skills/Conditions column and the pitch tooltip: built-in skills first,
+   then added skills with their names bold (no group labels — the bolding
+   alone distinguishes them), then the player's current condition words
+   (from conditionFor) in the same comma-separated list, bold yellow via
+   the .cond class. Returns "" when the player has neither skills nor a
+   condition to show. */
+function skillsHtml(groups, condWords){
   var parts = [];
-  if(groups.builtin.length)
+  if(groups && groups.builtin.length)
     parts.push(groups.builtin.map(function(s){ return esc(s); }).join(", "));
-  if(groups.added.length)
+  if(groups && groups.added.length)
     parts.push(groups.added.map(function(s){ return '<strong class="sk-added">'+esc(s)+'</strong>'; }).join(", "));
+  if(condWords && condWords.length)
+    parts.push(condWords.map(function(c){ return '<strong class="cond">'+esc(c)+'</strong>'; }).join(", "));
+  if(!parts.length) return "";
   return '<span class="sk-group">'+parts.join(", ")+'</span>';
 }
 /* A player's current condition at the position currently being viewed
@@ -2452,10 +2559,8 @@ function rosterHtml(g, side){
   var body = rows.map(function(r){
     var pos = rosterPosition(g, r.pid, r.p);
     var statTds = rosterStatCells(g, r.pid, r.p).map(function(v){ return '<td class="rp-stat">'+esc(v)+'</td>'; }).join("");
-    var skills = skillsHtml(skillGroupsFor(g, r.pid, r.p));
     var ci = conditionFor(g, r.pid);
-    var conds = ci.words.map(function(c){ return '<strong class="cond">'+esc(c)+'</strong>'; }).join(", ");
-    var cell = skills && conds ? skills+", "+conds : (skills || conds);
+    var cell = skillsHtml(skillGroupsFor(g, r.pid, r.p), ci.words);
     return '<tr'+(ci.grave ? ' class="rp-cas"' : '')+'><td class="rp-icon">'+rosterIconHtml(g, side, r.pid, r.p)+'</td>'+
       '<td class="rp-name">'+esc(r.p.name || ("#"+r.p.nr))+(isStarPlayer(g, r.pid) ? ' <span class="star" title="Star player">★</span>' : '')+'</td>'+
       '<td class="rp-pos">'+esc(pos || "—")+'</td>'+statTds+
@@ -2724,6 +2829,12 @@ function applyLinkParams(p){
     stopPlay();
     if(state.mode === "step") goStep(moveIdx); else goTo(moveIdx);
   }
+  /* The loaded game may have come from the URL (hashchange) rather than
+     from the dropdown: force the switcher onto that game. selectGame
+     already re-renders it when the game changed; this also covers the
+     paths where it did not run. (The unknown-game early return above
+     skips this on purpose — there is no loaded game to select.) */
+  syncSwitcherSelection();
 }
 window.addEventListener("hashchange", function(){
   var p = readLinkParams();
@@ -2859,6 +2970,7 @@ $("chess-toggle").addEventListener("click", function(){
   state.chess = !state.chess;
   this.setAttribute("aria-checked", state.chess ? "true" : "false");
   $("chesskey").classList.toggle("show", state.chess);
+  $("chessbar").classList.toggle("chess-on", state.chess);
   refreshRoster();
   drawPitch();
 });
@@ -2883,6 +2995,10 @@ updateModeUI();
 buildStatic();
 var startIdx = (linkMoveIdx != null && !pendingLink) ? linkMoveIdx : 0;
 if(state.mode==="step") goStep(startIdx); else goTo(startIdx);
+/* Deep link on first load: the game named by #game=<replayId> is now
+   loaded and positioned at the linked move — make the dropdown show
+   that same game, not the default first entry. */
+syncSwitcherSelection();
 
 </script>
 </body>
