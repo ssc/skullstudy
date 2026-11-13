@@ -35,6 +35,8 @@
   .wrap{max-width:1060px;margin:0 auto;padding:20px 16px 56px}
   h1,h2,h3{font-family:"Barlow Condensed","Barlow",sans-serif;line-height:1.05;margin:0}
   h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:700;letter-spacing:.01em;text-transform:uppercase}
+  h1.brand{display:flex;align-items:center;gap:.45rem;font-size:1.6rem;text-transform:none;letter-spacing:0}
+  h1.brand svg{width:1.5em;height:1.5em;flex:none}
   h2{font-size:1.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
   h3{font-size:1.12rem;font-weight:600}
   .lede{color:var(--muted);max-width:62ch;margin:8px 0 0;font-size:1.02rem}
@@ -376,7 +378,7 @@
 <div class="wrap">
 
   <header>
-    <h1>Get Better</h1>
+    <h1 class="brand"><svg viewBox="0 0 64 64" aria-hidden="true" fill="currentColor"><path d="M32 4C17 4 6 15 6 29c0 8 3.6 13.4 8 17.2V54a4 4 0 0 0 4 4h28a4 4 0 0 0 4-4V46.2C54.4 42.4 58 37 58 29 58 15 47 4 32 4ZM23 30a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm18 0a6 6 0 1 1 0-12 6 6 0 0 1 0 12ZM32 46l-4-8h8l-4 8Z"/><rect x="24" y="50" width="3" height="8" rx="1"/><rect x="30.5" y="50" width="3" height="8" rx="1"/><rect x="37" y="50" width="3" height="8" rx="1"/></svg>SkullStudy</h1>
   </header>
 
   <div class="gameswitch">
