@@ -31,13 +31,13 @@
   html{-webkit-text-size-adjust:100%}
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
-  button,[role="button"],select,summary,label.filebtn{min-height:2.5rem}
+  button,[role="button"],select,summary{min-height:2.5rem}
   .wrap{max-width:1060px;margin:0 auto;padding:20px 16px 56px}
   h1,h2,h3{font-family:"Barlow Condensed","Barlow",sans-serif;line-height:1.05;margin:0}
   h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:700;letter-spacing:.01em;text-transform:uppercase}
-  h1.brand{display:flex;align-items:center;gap:.45rem;font-size:1.6rem;text-transform:none;letter-spacing:0}
-  h1.brand svg{width:1.5em;height:1.5em;flex:none}
-  .tagline{color:var(--muted);font-size:.95rem;margin:.15rem 0 0}
+  h1.brand{font-size:1.6rem;font-weight:700;letter-spacing:0;text-transform:none;line-height:1;display:flex;align-items:center;gap:.55rem}
+  .brand-skull{width:1.45em;height:1.45em;flex:0 0 auto;display:block}
+  .tagline{color:var(--muted);margin:.4rem 0 0;font-size:.98rem;line-height:1.4}
   h2{font-size:1.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
   h3{font-size:1.12rem;font-weight:600}
   .lede{color:var(--muted);max-width:62ch;margin:8px 0 0;font-size:1.02rem}
@@ -45,17 +45,14 @@
   .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86em}
 
   /* game switcher */
-  .gameswitch{margin:18px 0 12px}
-  .gamesel{display:block;width:100%;background:var(--surface);border:1.5px solid var(--line);
+  .gameswitch{margin:18px 0 12px;display:flex;align-items:center;gap:10px}
+  .gamelabel{font-family:"Barlow Condensed",sans-serif;font-size:1.15rem;font-weight:600;white-space:nowrap}
+  .gamesel{flex:1;min-width:0;background:var(--surface);border:1.5px solid var(--line);
     border-radius:10px;padding:10px 14px;cursor:pointer;color:var(--ink);font:inherit;
     font-family:"Barlow Condensed",sans-serif;font-size:1.15rem;font-weight:600;line-height:1.15;
     box-shadow:0 0 0 2px var(--accent) inset, var(--shadow)}
   .gamesel:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .filebtn{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px dashed var(--line);
-    border-radius:10px;padding:10px 14px;cursor:pointer;font:inherit;font-weight:600;font-size:.95rem;color:var(--ink)}
-  .filebtn:hover{border-color:var(--accent)}
-  .loadmsg{font-size:.9rem;color:var(--muted);margin:2px 0 0;min-height:1.2em}
-  .loadmsg.err{color:var(--danger)}
+
 
   /* scrubber card */
   .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
@@ -66,7 +63,11 @@
   .team.away{flex-direction:row-reverse}
   .team.away{text-align:right}
   .team .tname{font-family:"Barlow Condensed",sans-serif;font-size:clamp(1.15rem,3.4vw,1.6rem);font-weight:700;line-height:1.05;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    display:flex;align-items:center;gap:.35em;min-width:0}
+  /* Only the name text truncates: the colour dot is its own non-shrinking
+     flex item, so it is never clipped when a long name ellipsises. */
+  .team .tname .ttext{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .team.away .tname{justify-content:flex-end}
   .team .tsub{color:var(--muted);font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .team .tsub a{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px}
   .team .tsub a:hover{text-decoration-thickness:2px}
@@ -85,16 +86,32 @@
   .tstats b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
   .tstats .dice{flex-basis:100%}
 
-  .team .dot{display:inline-block;width:.62em;height:.62em;border-radius:50%;margin-right:.35em;vertical-align:baseline}
+  .team .dot{flex:0 0 auto;width:.62em;height:.62em;border-radius:50%}
   .dot.home{background:var(--home)} .dot.away{background:var(--away)}
-  .team.active .tname{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:4px}
+  /* Active turn: the active team's name block is wrapped on all sides by
+     a team-colour ring plus a soft glow radiating out from every edge in
+     the same colour, and the inactive side dims. The name block always
+     carries generous padding, active or not, so the text keeps the same
+     margins, never sits cramped inside the glow, and nothing shifts when
+     the turn changes. Colours come from the --home/--away variables, so
+     the highlight follows the Options team-colour picks. */
+  .team{transition:opacity .25s ease}
+  .team.inactive{opacity:.55}
+  .team .tmain{padding:8px 14px;border-radius:10px;
+    box-shadow:inset 0 0 0 2px transparent,0 0 18px 2px transparent;
+    transition:box-shadow .25s ease}
+  .team.home.active .tmain{box-shadow:inset 0 0 0 2px var(--home),0 0 18px 2px var(--home);
+    box-shadow:inset 0 0 0 2px var(--home),0 0 18px 2px color-mix(in srgb,var(--home) 55%,transparent)}
+  .team.away.active .tmain{box-shadow:inset 0 0 0 2px var(--away),0 0 18px 2px var(--away);
+    box-shadow:inset 0 0 0 2px var(--away),0 0 18px 2px color-mix(in srgb,var(--away) 55%,transparent)}
   .scorebox{text-align:center;min-width:0}
   @media (max-width:640px){
     .scoreboard{grid-template-columns:1fr 1fr;grid-template-areas:"score score" "home away"}
     .scorebox{grid-area:score}
     .team.home{grid-area:home}
     .team.away{grid-area:away}
-    .team .tname{white-space:normal;font-size:1.18rem}
+    .team .tname{font-size:1.18rem}
+    .team .tname .ttext{white-space:normal;overflow:visible;text-overflow:clip}
     .team .tsub{white-space:normal}
     .scoreboard .team{flex-direction:column;gap:4px}
     .scoreboard .tstats{width:100%;min-width:0}
@@ -122,7 +139,7 @@
   .tip .sk-added{font-weight:700}
 
   /* team-name roster popup */
-  .team:not(.active) .tname.roster-anchor:hover{text-decoration:underline dotted var(--muted);text-decoration-thickness:2px;text-underline-offset:4px}
+  .team .tname.roster-anchor:hover .ttext{text-decoration:underline dotted var(--muted);text-decoration-thickness:2px;text-underline-offset:4px}
   .tname.roster-anchor:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
   .rosterpop{position:absolute;z-index:60;width:min(720px,calc(100vw - 16px));
     background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;
@@ -294,6 +311,7 @@
   .colorswatch{width:27px;height:27px;min-height:0;padding:0;border-radius:50%;cursor:pointer;
     border:2px solid var(--surface);box-shadow:0 0 0 1.5px var(--line)}
   .colorswatch[aria-pressed="true"]{box-shadow:0 0 0 2.5px var(--ink)}
+  .colorswatch:disabled{opacity:.28;filter:grayscale(70%);cursor:not-allowed;box-shadow:0 0 0 1.5px var(--line)}
   .colorswatch:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .colorname{color:var(--muted);font-size:.9rem}
   .colornote{margin:6px 0 0;color:var(--muted);font-size:.85rem;max-width:68ch}
@@ -379,23 +397,20 @@
 <div class="wrap">
 
   <header>
-    <h1 class="brand"><svg viewBox="0 0 64 64" aria-hidden="true" fill="currentColor"><path d="M32 4C17 4 6 15 6 29c0 8 3.6 13.4 8 17.2V54a4 4 0 0 0 4 4h28a4 4 0 0 0 4-4V46.2C54.4 42.4 58 37 58 29 58 15 47 4 32 4ZM23 30a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm18 0a6 6 0 1 1 0-12 6 6 0 0 1 0 12ZM32 46l-4-8h8l-4 8Z"/><rect x="24" y="50" width="3" height="8" rx="1"/><rect x="30.5" y="50" width="3" height="8" rx="1"/><rect x="37" y="50" width="3" height="8" rx="1"/></svg>SkullStudy</h1>
+    <h1 class="brand"><svg class="brand-skull" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.1c-5 0-8.8 3.7-8.8 8.5 0 2.8 1.4 5.3 3.6 6.8.3.2.5.6.5 1v2c0 .9.7 1.6 1.6 1.6h6.2c.9 0 1.6-.7 1.6-1.6v-2c0-.4.2-.8.5-1 2.2-1.5 3.6-4 3.6-6.8 0-4.8-3.8-8.5-8.8-8.5Z M6.7 11.4a1.95 1.95 0 1 0 3.9 0 1.95 1.95 0 1 0-3.9 0 Z M13.4 11.4a1.95 1.95 0 1 0 3.9 0 1.95 1.95 0 1 0-3.9 0 Z M12 13.1l1.15 2.15c.2.37-.07.82-.48.82h-1.34c-.41 0-.68-.45-.48-.82L12 13.1Z"/></svg><span>SkullStudy</span></h1>
     <p class="tagline">Watch. Analyze. Regret. Improve.</p>
   </header>
 
   <div class="gameswitch">
+    <label class="gamelabel" for="gameswitch">Choose Game:</label>
     <select class="gamesel" id="gameswitch" aria-label="Choose replay"></select>
-  </div>
-  <div>
-    <button class="filebtn" id="jsonbtn" type="button">Load a turns_*.json from the parser</button>
-    <p class="loadmsg" id="loadmsg" role="status"></p>
   </div>
 
   <div class="card scrub" id="scrubcard">
     <div class="scoreboard">
       <div class="team home" id="team-home">
         <div class="tmain">
-          <div class="tname roster-anchor" tabindex="0" data-side="home" aria-describedby="rosterpop"><span class="dot home"></span><span id="home-name">—</span></div>
+          <div class="tname roster-anchor" tabindex="0" data-side="home" aria-describedby="rosterpop"><span class="dot home"></span><span class="ttext" id="home-name">—</span></div>
           <div class="tsub" id="home-sub">—</div>
         </div>
         <div class="tstats" id="home-stats" hidden></div>
@@ -406,7 +421,7 @@
       </div>
       <div class="team away" id="team-away">
         <div class="tmain">
-          <div class="tname roster-anchor" tabindex="0" data-side="away" aria-describedby="rosterpop"><span id="away-name">—</span><span class="dot away" style="margin:0 0 0 .35em"></span></div>
+          <div class="tname roster-anchor" tabindex="0" data-side="away" aria-describedby="rosterpop"><span class="ttext" id="away-name">—</span><span class="dot away"></span></div>
           <div class="tsub" id="away-sub">—</div>
         </div>
         <div class="tstats" id="away-stats" hidden></div>
@@ -501,7 +516,7 @@
         <button class="switch" id="morestats-toggle" type="button" role="switch" aria-checked="false">
           <span class="track" aria-hidden="true"></span><span>More Stats</span>
         </button>
-        <span style="color:var(--muted);font-size:.85rem">Show each team’s on pitch, standing, based, reserves, KOs and injured counts, plus cumulative blocks, dodges, rushes, block dice by face and armour breaks (as breaks / total armour rolls where the log records every armour roll), in the header between the team name and the score.</span>
+        <span style="color:var(--muted);font-size:.85rem">Show each team’s on pitch, standing, based, reserves, KOs and injured counts, plus cumulative blocks, dodges, rushes, block dice by face and armour rolls (as breaks / total armour rolls where the log records every armour roll), in the header between the team name and the score.</span>
       </div>
       <div class="teamcolors">
         <h3 class="options-sub">Team Colors</h3>
@@ -642,7 +657,7 @@ var PLAYER_STATS = {"1954282":{"18034434":["Minotaur",5,5,4,6,9],"18034435":["Bu
    innate = Catch; 47 is the Thrower's only innate = Pass; 56 is a Wraith
    innate that fires when its owner is pushed and picks the square =
    Side Step). Games loaded from disk carry their split on the player
-   records instead (see handleTurnsFile). */
+   records instead. */
 var BB3_SKILL_NAME = {6:"Catch",7:"Dodge",11:"Leap",19:"Regeneration",30:"Block",47:"Pass",56:"Side Step"};
 function bb3SkillLabel(code){ return BB3_SKILL_NAME[code] || ("Skill "+code); }
 var PLAYER_SKILLS_GROUPED = {"1954282":{"18034434":{"builtin":["Frenzy","Horns","Loner","Mighty Blow","Thick Skull","Unchannelled Fury"],"added":[]},"18034435":{"builtin":["Sprint","Sure Feet","Thick Skull","Unsteady"],"added":["Break Tackle","Block"]},"18034436":{"builtin":["Sprint","Sure Feet","Thick Skull","Unsteady"],"added":[]},"18038035":{"builtin":["Block","Iron Hard Skin","Thick Skull"],"added":[]},"18034438":{"builtin":["Block","Iron Hard Skin","Thick Skull"],"added":[]},"18034439":{"builtin":["Block","Iron Hard Skin","Thick Skull"],"added":[]},"18034440":{"builtin":["Block","Iron Hard Skin","Thick Skull"],"added":["Guard"]},"18034446":{"builtin":[],"added":["Sneaky Git"]},"18378469":{"builtin":["Brawler","Breathe Fire","Disturbing Presence","Thick Skull"],"added":[]},"18034443":{"builtin":[],"added":[]},"18034444":{"builtin":[],"added":[]},"18034604":{"builtin":["Shadowing","Stab"],"added":["Sure Hands"]},"18387197":{"builtin":["Block","Dodge","Leap"],"added":[]},"18387198":{"builtin":["Block","Dodge","Leap"],"added":["Strip Ball","Wrestle"]},"18393315":{"builtin":["Pass","Safe Pair Of Hands"],"added":[]},"18387207":{"builtin":["Catch","Dodge","Sprint"],"added":["Block"]},"18387199":{"builtin":[],"added":["Block"]},"18387200":{"builtin":[],"added":[]},"18387201":{"builtin":[],"added":[]},"18387202":{"builtin":[],"added":[]},"18387203":{"builtin":[],"added":[]},"18387205":{"builtin":[],"added":[]},"18387210":{"builtin":[],"added":[]},"18393285":{"builtin":["Loner","Mighty Blow","Stand Firm","Strong Arm","Take Root","Thick Skull","Throw Team-Mate"],"added":[]}},"1960250":{"18403557":{"builtin":["Block","Dodge","Leap"],"added":["Strip Ball"]},"18403558":{"builtin":["Block","Dodge","Leap"],"added":["Tackle"]},"18403559":{"builtin":["Catch","Dodge","Sprint"],"added":["Sidestep"]},"18403560":{"builtin":["Catch","Dodge","Sprint"],"added":["Sure Hands"]},"18403568":{"builtin":["Pass","Safe Pair Of Hands"],"added":["Leader"]},"18403562":{"builtin":[],"added":[]},"18403563":{"builtin":[],"added":[]},"18403564":{"builtin":[],"added":[]},"18403565":{"builtin":[],"added":["Wrestle"]},"18403566":{"builtin":[],"added":[]},"18403567":{"builtin":["Loner","Mighty Blow","Stand Firm","Strong Arm","Take Root","Thick Skull","Throw Team-Mate"],"added":[]},"18448074":{"builtin":["Pass","Sure Hands"],"added":["Leader"]},"18448075":{"builtin":["Pass","Sure Hands"],"added":["Block"]},"18448076":{"builtin":["Block","Break Tackle"],"added":["Guard"]},"18448077":{"builtin":["Block","Break Tackle"],"added":["Tackle"]},"18448078":{"builtin":["Mighty Blow","Taunt","Thick Skull","Unsteady"],"added":["Block","Team Captain","Pro"]},"18448079":{"builtin":["Mighty Blow","Taunt","Thick Skull","Unsteady"],"added":["Block"]},"18448080":{"builtin":[],"added":["Guard"]},"18448081":{"builtin":[],"added":[]},"18448082":{"builtin":[],"added":[]},"18448083":{"builtin":[],"added":[]},"18448084":{"builtin":[],"added":[]},"18448085":{"builtin":["Dodge","Right Stuff","Stunty"],"added":[]},"18448086":{"builtin":["Always Hungry","Loner","Mighty Blow","Projectile Vomit","Really Stupid","Regeneration","Throw Team-Mate"],"added":[]}},"bbr-20261110-0854":{"1":{"builtin":["Leap","Block","Dodge"],"added":["Skill 68"]},"2":{"builtin":["Leap","Block","Dodge"],"added":["Skill 1"]},"3":{"builtin":["Pass"],"added":["Skill 14"]},"4":{"builtin":["Catch","Dodge"],"added":["Side Step","Skill 8","Block"]},"5":{"builtin":[],"added":["Leap","Block","Dodge"]},"6":{"builtin":[],"added":[]},"7":{"builtin":[],"added":[]},"8":{"builtin":[],"added":["Dodge","Block","Skill 71"]},"9":{"builtin":["Skill 64","Skill 44","Skill 13","Skill 17","Skill 20","Skill 58","Skill 63"],"added":[]},"10":{"builtin":[],"added":[]},"11":{"builtin":[],"added":[]},"37":{"builtin":["Regeneration","Skill 75","Skill 36"],"added":["Skill 13","Block","Dodge"]},"38":{"builtin":["Regeneration","Skill 75","Skill 36"],"added":["Skill 68","Dodge"]},"39":{"builtin":["Side Step","Skill 10","Regeneration","Skill 46","Block"],"added":[]},"40":{"builtin":["Side Step","Skill 10","Regeneration","Skill 46","Block"],"added":["Skill 38"]},"41":{"builtin":["Skill 17","Regeneration","Skill 63"],"added":["Skill 38","Skill 13","Block"]},"42":{"builtin":["Skill 17","Regeneration","Skill 63"],"added":["Block"]},"43":{"builtin":["Dodge"],"added":["Skill 14","Block"]},"44":{"builtin":["Dodge"],"added":["Skill 68"]},"45":{"builtin":["Regeneration"],"added":[]},"46":{"builtin":["Regeneration"],"added":[]},"47":{"builtin":["Regeneration"],"added":[]}},"1960263":{"18426628":{"builtin":["Catch","Dodge","Sprint"],"added":[]},"18426362":{"builtin":["Block","Dodge","Leap"],"added":[]},"18387207":{"builtin":["Catch","Dodge","Sprint"],"added":["Block","Sidestep","+AV","Defensive"]},"18393331":{"builtin":[],"added":["Block"]},"18423688":{"builtin":[],"added":["Block"]},"18423694":{"builtin":[],"added":[]},"18423689":{"builtin":[],"added":[]},"18423690":{"builtin":[],"added":[]},"18423692":{"builtin":[],"added":[]},"18423691":{"builtin":[],"added":[]},"18423693":{"builtin":[],"added":[]},"18393285":{"builtin":["Loner","Mighty Blow","Stand Firm","Strong Arm","Take Root","Thick Skull","Throw Team-Mate"],"added":["Multiple Block","Block"]},"18422761":{"builtin":["Always Hungry","Mighty Blow","Projectile Vomit","Really Stupid","Regeneration","Throw Team-Mate"],"added":["+PA"]},"18422765":{"builtin":["Brawler","Grab"],"added":["Sidestep"]},"18441847":{"builtin":["Brawler","Grab"],"added":[]},"18422764":{"builtin":["Brawler","Grab"],"added":[]},"18422766":{"builtin":["Brawler","Grab"],"added":["Hatred"]},"18426304":{"builtin":["Brawler","Grab"],"added":[]},"18430835":{"builtin":["Brawler","Grab"],"added":[]},"18422768":{"builtin":["Dodge","Right Stuff","Stunty","Thick Skull"],"added":["Lethal Flight"]},"18422769":{"builtin":["Dodge","Right Stuff","Stunty","Thick Skull"],"added":[]},"18422999":{"builtin":["Dodge","Right Stuff","Stunty","Thick Skull"],"added":["Hatred"]},"18422771":{"builtin":["Dodge","Right Stuff","Stunty","Thick Skull"],"added":["Lone Fouler"]},"18445518":{"builtin":["Dodge","Right Stuff","Stunty","Thick Skull"],"added":[]}},"bbr-20261107-0347":{"1":{"builtin":["Skill 64","Skill 51","Skill 44","Skill 13","Skill 18","Regeneration","Skill 95"],"added":["Skill 50"]},"2":{"builtin":[],"added":[]},"3":{"builtin":["Skill 67","Skill 36","Skill 44","Skill 13","Skill 15","Skill 63"],"added":[]},"4":{"builtin":[],"added":["Block"]},"5":{"builtin":[],"added":[]},"6":{"builtin":[],"added":["Block"]},"7":{"builtin":["Skill 1015","Skill 86","Pass"],"added":[]},"8":{"builtin":["Skill 86"],"added":["Block"]},"9":{"builtin":[],"added":["Block"]},"10":{"builtin":["Skill 86"],"added":["Block","Dodge"]},"11":{"builtin":[],"added":[]},"12":{"builtin":["Skill 86"],"added":[]},"37":{"builtin":["Pass"],"added":[]},"38":{"builtin":["Catch","Dodge"],"added":["Side Step","Block"]},"39":{"builtin":[],"added":["Dodge","Block","Skill 71"]},"40":{"builtin":[],"added":["Leap","Block","Dodge"]},"41":{"builtin":[],"added":["Block","Dodge"]},"42":{"builtin":[],"added":[]},"43":{"builtin":[],"added":["Skill 44"]},"44":{"builtin":[],"added":["Skill 44"]},"45":{"builtin":[],"added":["Skill 44"]},"46":{"builtin":[],"added":["Skill 44"]},"47":{"builtin":[],"added":["Skill 44"]}}};
@@ -1659,12 +1674,12 @@ function renderSwitcher(){
     var o = document.createElement("option");
     o.value = String(i);
     var final = g.finalScore ? (g.finalScore.home+"–"+g.finalScore.away) : "";
-    var srcTag = g.source==="bb3" ? "BB3 · " : "";
+    var srcTag = g.source==="bb3" ? " (BB3)" : " (FUMBBL)";
     var ref = g.source==="bb3" ? (g.comp || "Blood Bowl 3") : "Replay "+(g.replayId||"custom");
-    var gname = srcTag+g.teams.home.name+" "+final+" "+g.teams.away.name;
+    var gname = g.teams.home.name+" "+final+" "+g.teams.away.name;
     var gsub = g.teams.home.race+" ("+g.teams.home.coach+") vs "+g.teams.away.race+
       " ("+g.teams.away.coach+") · "+ref+(g.date ? " · "+g.date : "");
-    o.textContent = gname+" — "+gsub;
+    o.textContent = gname+" — "+gsub+srcTag;
     host.appendChild(o);
   });
   host.value = String(state.gi);
@@ -1931,8 +1946,8 @@ function renderHeaderStats(t){
       parts.push("<span><b>"+s.rushOk+"/"+s.rushTot+"</b> rushes</span>");
       parts.push("<span class=\"dice\">Block dice — Skull <b>"+s.dice.skull+"</b> · Both down <b>"+s.dice.bothdown+"</b> · Push <b>"+s.dice.push+"</b> · Stumble <b>"+s.dice.stumble+"</b> · POW <b>"+s.dice.pow+"</b></span>");
       parts.push(cum.armourKnown ?
-        "<span><b>"+s.armour+"/"+s.armourTot+"</b> armour breaks</span>" :
-        "<span><b>"+s.armour+"</b> armour breaks</span>");
+        "<span><b>"+s.armour+"/"+s.armourTot+"</b> armour rolls</span>" :
+        "<span><b>"+s.armour+"/\u2014</b> armour rolls</span>");
     }
     return parts.join("");
   }
@@ -1941,24 +1956,20 @@ function renderHeaderStats(t){
   hEl.hidden = false; aEl.hidden = false;
 }
 function paintScoreboard(t){
-  var g = game();
   $("score-home").textContent = t.score.home;
   $("score-away").textContent = t.score.away;
   var tn = t.activeTeam==="home" ? t.homeTurn : t.awayTurn;
-  if(t.activeTeam && state.morestats){
-    /* More Stats mode: break after the half/turn indicator so the active
-       team's name drops to its own line, freeing horizontal width for the
-       header stats blocks on either side. */
-    $("phase").textContent = "Half "+t.half+" · Turn "+tn;
-    $("phase").appendChild(document.createElement("br"));
-    $("phase").appendChild(document.createTextNode("— "+(t.activeTeam==="home" ? g.teams.home.name : g.teams.away.name)));
-  } else {
-    $("phase").textContent = t.activeTeam ?
-      "Half "+t.half+" · Turn "+tn+" — "+(t.activeTeam==="home" ? g.teams.home.name : g.teams.away.name) :
-      "Half "+t.half+" · Setup — kick-off";
-  }
+  /* The centre line names only the phase; whose turn it is shows on the
+     scoreboard itself — the active team's side is highlighted in its
+     team colour and the inactive side dims (see the .team.active /
+     .team.inactive rules). */
+  $("phase").textContent = t.activeTeam ?
+    "Half "+t.half+" · Turn "+tn :
+    "Half "+t.half+" · Setup — kick-off";
   $("team-home").classList.toggle("active", t.activeTeam==="home");
+  $("team-home").classList.toggle("inactive", t.activeTeam==="away");
   $("team-away").classList.toggle("active", t.activeTeam==="away");
+  $("team-away").classList.toggle("inactive", t.activeTeam==="home");
   renderHeaderStats(t);
 }
 function goTo(i){
@@ -2689,13 +2700,6 @@ function linkMoveIndex(p){
   var mv = parseInt(raw, 10);
   return isNaN(mv) ? null : Math.max(0, mv - 1);
 }
-function notePendingLink(){
-  if(!pendingLink) return;
-  $("loadmsg").textContent = "This link points to replay \u201C" + pendingLink.gameId + "\u201D" +
-    (pendingLink.moveIdx != null ? ", move " + (pendingLink.moveIdx + 1) : "") +
-    " \u2014 that game isn\u2019t one of the built-in replays, so it can\u2019t be reconstructed from the link alone. Load its turns_*.json file above and the viewer will jump straight to the linked move.";
-  $("loadmsg").classList.remove("err");
-}
 function applyLinkParams(p){
   var moveIdx = linkMoveIndex(p);
   if(p.combine != null){
@@ -2711,7 +2715,7 @@ function applyLinkParams(p){
   }
   if(p.game != null && p.game !== ""){
     var gi = findGameIndex(p.game);
-    if(gi < 0){ pendingLink = { gameId: p.game, moveIdx: moveIdx }; notePendingLink(); return; }
+    if(gi < 0){ pendingLink = { gameId: p.game, moveIdx: moveIdx }; return; }
     if(gi !== state.gi) selectGame(gi);
   }
   if(p.view === "turn" || p.mode === "turn"){ if(state.mode !== "turn") setMode(false); }
@@ -2763,80 +2767,6 @@ $("btn-share").addEventListener("click", function(){
   }
 });
 
-/* ---------- load a parser turns_*.json ---------- */
-function pickFile(accept, cb){
-  var inp = document.createElement("input");
-  inp.type = "file"; inp.accept = accept; inp.style.display = "none";
-  document.body.appendChild(inp);
-  inp.addEventListener("change", function(){
-    var f = inp.files && inp.files[0];
-    if(inp.parentNode) inp.parentNode.removeChild(inp);
-    if(f) cb(f);
-  });
-  inp.click();
-}
-function handleTurnsFile(f){
-  var rd = new FileReader();
-  rd.onload = function(){
-    try{
-      var d = JSON.parse(String(rd.result));
-      if(!d.teams || !Array.isArray(d.turns) || !d.turns.length) throw new Error("no turns array found");
-      var g = {
-        replayId: f.name.replace(/\.json$/i, ""), date: "Loaded from file",
-        teams: d.teams, source: d.source || null, comp: d.comp || null, nCommands: d.nCommands || 0,
-        finalScore: d.finalScore || null, blocks: d.blocksByActiveTeam || null,
-        players: d.players || null, turns: d.turns, events: d.events || []
-      };
-      if(!g.players && d.roster){
-        /* A file whose roster names its players (the BB3 import): carry the
-           roster's position, chess piece, starplayer flag, stat line and
-           skills into the player records the renderer reads. */
-        g.players = {};
-        Object.keys(d.roster).forEach(function(key){
-          var r = d.roster[key] || {};
-          var pid = r.id != null ? String(r.id) : key;
-          var rec = { name:r.name, nr:r.nr, team:r.team, starplayer:!!r.starplayer };
-          if(r.position) rec.position = r.position;
-          if(r.chess_piece) rec.chess = String(r.chess_piece).toLowerCase();
-          if(r.ma != null) rec.stats = [r.position || "", r.ma, r.st, r.ag, (r.pa == null ? null : r.pa), r.av];
-          if(r.skills_innate || r.skills_acquired){
-            var labelSkill = function(c){ return (typeof c === "number") ? bb3SkillLabel(c) : String(c); };
-            rec.skillsBuiltin = (r.skills_innate || []).map(labelSkill);
-            rec.skillsAdded = (r.skills_acquired || []).map(labelSkill);
-          }
-          g.players[pid] = rec;
-        });
-      }
-      if(!g.players){
-        g.players = {};
-        d.turns.forEach(function(t){
-          var ps = (t.snap && t.snap.players) || {};
-          Object.keys(ps).forEach(function(pid){
-            if(!g.players[pid]) g.players[pid] = { name:"#"+ps[pid].nr, nr:ps[pid].nr, team:ps[pid].team };
-          });
-        });
-      }
-      fixStaleProne(g);
-      GAMES.push(g);
-      selectGame(GAMES.length-1);
-      $("loadmsg").textContent = "Loaded "+f.name+" — "+g.turns.length+" turn snapshots, "+(g.events||[]).length+" key events.";
-      if(pendingLink && (pendingLink.gameId==null || pendingLink.gameId==="" || normGameId(pendingLink.gameId)===normGameId(g.replayId))){
-        if(pendingLink.moveIdx!=null){
-          if(state.mode==="step") goStep(pendingLink.moveIdx); else goTo(pendingLink.moveIdx);
-          $("loadmsg").textContent += " Jumped to move "+((state.mode==="step" ? state.si : state.ti)+1)+" from the shared link.";
-        }
-        pendingLink = null;
-      }
-      $("loadmsg").classList.remove("err");
-    }catch(err){
-      $("loadmsg").textContent = "Could not load that file — it doesn’t look like a turns_*.json from parse_replay.py ("+err.message+").";
-      $("loadmsg").classList.add("err");
-    }
-  };
-  rd.readAsText(f);
-}
-$("jsonbtn").addEventListener("click", function(){ pickFile(".json,application/json", handleTurnsFile); });
-
 /* ---------- List Events toggle (legend line) ---------- */
 $("list-events-btn").addEventListener("click", function(){
   var panel = $("events-panel");
@@ -2881,11 +2811,19 @@ function applyTeamColors(){
 function paintColorUI(){
   ["home","away"].forEach(function(team){
     var cur = team==="home" ? state.homeColor : state.awayColor;
+    var other = team==="home" ? state.awayColor : state.homeColor;
     $(team+"-colorname").textContent = TEAM_COLORS[cur].name;
     var box = $(team+"-colors");
     for(var i=0;i<box.children.length;i++){
-      box.children[i].setAttribute("aria-pressed",
-        box.children[i].getAttribute("data-color")===cur ? "true" : "false");
+      var key = box.children[i].getAttribute("data-color");
+      box.children[i].setAttribute("aria-pressed", key===cur ? "true" : "false");
+      /* The other team's colour is off-limits on this row, so the two
+         teams can never share a colour; it frees up the moment the
+         other team picks a different one. */
+      box.children[i].disabled = key===other;
+      box.children[i].title = key===other
+        ? TEAM_COLORS[key].name + " — in use by the other team"
+        : TEAM_COLORS[key].name;
     }
   });
 }
@@ -2943,7 +2881,6 @@ renderSwitcher();
 if(state.mode==="step" && !curStepsRt()) state.mode = "turn";
 updateModeUI();
 buildStatic();
-if(pendingLink) notePendingLink();
 var startIdx = (linkMoveIdx != null && !pendingLink) ? linkMoveIdx : 0;
 if(state.mode==="step") goStep(startIdx); else goTo(startIdx);
 
